@@ -1,0 +1,27 @@
+#########################
+### Shell
+#########################
+
+shell -$SHELL
+shelltitle ""
+
+#########################
+### Options
+#########################
+
+startup_message off
+defscrollback 2048
+
+#########################
+### Host -- Blue, ctrl+K
+#########################
+
+# escape ^kK
+# hardstatus alwayslastline "%{= kW} $HOSTNAME %-LW%{= BW}%50>%n%f* %t%{-}%+Lw%< %=%l %c:%s [K]"
+
+#########################
+### VMs -- Red, ctrl+L
+#########################
+
+escape ^lL
+hardstatus alwayslastline "%{= kW} $BASH_HOST %-LW%{= rW}%50>%n%f* %t%{-}%+Lw%< %=%l %c:%s [K]"
