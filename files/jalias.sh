@@ -4,7 +4,7 @@
 
 if test -e $(which vim)
 then
-    alias vi="$which vim)"
+    alias vi="$(which vim)"
 fi
 
 #########################
