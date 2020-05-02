@@ -1,0 +1,46 @@
+---
+  
+- hosts: centos
+  become: yes
+  tasks:
+
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+
+  - name: Install EPEL repository
+    yum:
+      name: epel-release
+      state: latest
+
+  - name: Install my <3 packages
+    yum:
+      name:
+        - vim
+        - wget
+        - screen
+      state: latest
+
+  - name: Copy jalias.sh
+    copy:
+      src: files/jalias.sh
+      dest: /etc/profile.d/jalias.sh
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Copy .screenrc to ~{{ os_user }}
+    copy:
+      src: files/screenrc
+      dest: /home/{{ os_user }}/.screenrc
+      owner: "{{ os_user }}"
+      group: "{{ os_user }}"
+      mode: 0644
+
+  - name: Copy .screenrc to ~root
+    copy:
+      src: files/screenrc
+      dest: /root/.screenrc
+      owner: root
+      group: root
+      mode: 0644
