@@ -4,10 +4,6 @@
   become: yes
   tasks:
 
-  - name: Disable SELinux
-    selinux:
-      state: disabled
-
   - name: Install EPEL repository
     yum:
       name: epel-release
