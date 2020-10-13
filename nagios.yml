@@ -1,0 +1,107 @@
+---
+  
+- hosts: monitors
+  become: yes
+  tasks:
+
+  - name: Disable SELinux persisted
+    lineinfile:
+      path: /etc/sysconfig/selinux  
+      regexp: '^SELINUX='
+      line: 'SELINUX=disabled'
+
+  - name: Disable SELinux runtime
+    selinux:
+      state: disabled
+
+  - name: Configure noop scheduler in grub
+    lineinfile:
+      path: /etc/sysconfig/grub
+      regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="console=tty0 crashkernel=auto console=ttyS0,115200 elevator=noop"'
+ 
+  - name: Create the new grub config
+    command: grub2-mkconfig > /boot/grub2/grub.cfg
+
+  - name: Install EPEL repository
+    yum:
+      name: epel-release
+      state: latest
+
+  - name: Install Percona repository
+    yum:
+      name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+      state: latest
+
+  - name: Install Apache, Nagios, and plugins
+    yum:
+      name:
+        - httpd
+        - nagios
+        - nagios-common
+        - nagios-plugins-mysql
+        #- nagios-plugins-ssh
+        #- nagios-plugins-tcp
+        #- nagios-plugins-http
+        #- nagios-plugins-load
+        #- nagios-plugins-nrpe
+        #- nagios-plugins-uptime
+        #- nagios-plugins-swap
+        #- nagios-plugins-ping
+        #- nagios-plugins-procs
+        #- nagios-plugins-users
+        #- nagios-plugins-disk
+      state: latest
+
+  - name: Create an empty password file
+    file:
+      path: "/etc/nagios/passwd"
+      state: touch
+      owner: root
+      group: root
+      mode: 0664
+
+  - name: Create the Nagios admin user
+    command: htpasswd -b -c /etc/nagios/passwd "{{ nagios_username }}" "{{ nagios_password }}"
+
+  - name: Copy cgi.cfg
+    copy:
+      src: /etc/ansible/files/cgi.cfg
+      dest: /etc/nagios/cgi.cfg
+      owner: root
+      group: root
+      mode: 0664
+
+  - name: Copy nagios.cfg
+    copy:
+      src: /etc/ansible/files/nagios.cfg
+      dest: /etc/nagios/nagios.cfg
+      owner: root
+      group: root
+      mode: 0664
+
+  - name: Copy resource.cfg
+    copy:
+      src: /etc/ansible/files/resource.cfg
+      dest: /etc/nagios/private/resource.cfg
+      owner: root
+      group: nagios
+      mode: 0640
+
+  - name: Copy mysql.cnf
+    copy:
+      src: /etc/ansible/files/mysql.cnf
+      dest: /etc/nagios/mysql.cnf
+      owner: root
+      group: nagios
+      mode: 0640
+
+  - name: Start Nagios if not started
+    service:
+      name: nagios
+      state: started
+
+  - name: Start Apache if not started
+    service:
+      name: httpd
+      state: started
