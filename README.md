@@ -1,4 +1,4 @@
-# ansible-bootstrap
+# mysql-ansible
 1. Set an `os_user` variable. Ex: If all hosts have a `vagrant` user then add the following to the inventory file:
 ```
 [all:vars]
