@@ -1,0 +1,6 @@
+---
+
+- hosts: async-57-source,async-57-replicas
+  become: yes
+  roles:
+    - {role: async-57, tags: async-57}
