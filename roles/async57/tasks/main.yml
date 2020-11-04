@@ -1,0 +1,137 @@
+---
+
+- name: Install EPEL & Percona Repository
+  yum:
+    name:
+      - epel-release
+      - https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+    state: latest
+
+- name: Install Percona Server 5.7 & Python Modules
+  yum:
+    name:
+      - Percona-Server-server-57
+      - python2-PyMySQL
+      - MySQL-python
+    state: latest
+  notify:
+    - start mysql
+
+- name: Generate a unique server_id
+  shell: echo "{{ ansible_eth1['ipv4']['address'] }}" | awk -F. '{ print $2$3$4 }'
+  register: server_id
+
+- name: Configure my.cnf
+  ini_file:
+     path: /etc/my.cnf
+     section: mysqld
+     option: "{{ item.option }}"
+     value: "{{ item.value }}"
+  with_items:
+     - { option: binlog_format, value: "ROW" }
+     - { option: event_scheduler, value: "0" }
+     - { option: log_bin, value: "mysql-bin" }
+     - { option: log_slave_updates, value: "1" }
+     - { option: master_info_repository, value: "TABLE" }
+     - { option: read_only, value: "1" }
+     - { option: report_host, value: "{{ ansible_eth1['ipv4']['address'] }}" }
+     - { option: report_port, value: "3306" }
+     - { option: server_id, value: "{{ server_id.stdout }}" }
+     - { option: skip_name_resolve, value: "1" }
+     - { option: slave_net_timeout, value: "3600" }
+     - { option: super_read_only, value: "1" }
+  notify:
+    - start mysql
+
+- name: Check if datadir is empty
+  find: paths=/var/lib/mysql file_type=any
+  register: datadir
+
+- debug:
+    var: datadir.matched
+
+- name: Initialize insecure datadir
+  command: /sbin/mysqld --initialize-insecure --user=mysql
+  when: datadir.matched == 0
+
+- meta: flush_handlers
+
+- name: Set the source to be writable [block]
+  block:
+  - name: Set read_only=0
+    mysql_variables:
+      variable: read_only
+      value: 0
+  - name: Set super_read_only=0
+    mysql_variables:
+      variable: super_read_only
+      value: 0
+  when: mysql_role == 'source'
+
+- name: Create users [block]
+  block:
+  - name: Create replication user
+    mysql_user:
+      name: "{{ repl_user }}"
+      host: "%"
+      password: "{{ repl_password }}"
+      priv: '*.*:REPLICATION CLIENT,REPLICATION SLAVE'
+      state: present
+  - name: Create {{ mysql_user }}@% user
+    mysql_user:
+      name: "{{ mysql_user }}"
+      host: "%"
+      password: "{{ mysql_password }}"
+      priv: '*.*:ALL,GRANT'
+      state: present
+  when: mysql_role == 'source'
+
+- name: Load data [block]
+  block:
+  - name: Download Sakila DB
+    get_url:
+      url: http://downloads.mysql.com/docs/sakila-db.tar.gz
+      dest: /tmp/sakila-db.tar.gz
+      mode: 0664
+  - name: Extract Sakila DB
+    unarchive:
+      remote_src: yes
+      src: /tmp/sakila-db.tar.gz
+      dest: /tmp/
+  - name: Import Sakila DB Schema
+    mysql_db:
+      name: sakila
+      state: import
+      target: /tmp/sakila-db/sakila-schema.sql
+  - name: Import Sakila DB Data
+    mysql_db:
+      name: sakila
+      state: import
+      target: /tmp/sakila-db/sakila-data.sql
+  when: mysql_role == 'source'
+
+- name: Evaluate replication [block]
+  block:
+  - name: Check if replication is already configured
+    shell: mysql -e"show slave status\G"
+    register: slavestatus
+  - debug:
+      var: slavestatus.stdout
+  - name: Configure replication
+    shell: mysql -e"change master to master_host=\"{{ source_ip }}\", master_user=\"{{ repl_user }}\", master_password=\"{{ repl_password }}\", master_log_file=\"mysql-bin.000001\", master_log_pos=4;"
+    when: slavestatus.stdout == ""
+  - name: Start replication
+    mysql_replication:
+      mode: startslave
+    when: slavestatus.stdout == ""
+  when: mysql_role == 'replica'
+
+- name: Configure the ~/{{ os_user }}/.my.cnf
+  ini_file:
+     path: /home/{{ os_user }}/.my.cnf
+     section: client
+     option: "{{ item.option }}"
+     value: "{{ item.value }}"
+  with_items:
+     - { option: user, value: "{{ mysql_user }}" }
+     - { option: password, value: "{{ mysql_password }}" }

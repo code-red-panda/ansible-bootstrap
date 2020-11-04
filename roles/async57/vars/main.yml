@@ -1,7 +1,5 @@
 ---
 
-os_user: vagrant
-source_ip: 192.168.2.X
 mysql_user: dba
 mysql_password: Dba1234!
 repl_user: repl

@@ -1,6 +1,0 @@
-[async-57-source]
-async-57-1 ansible_connection=local ansible_host=192.168.2.X
-
-[async-57-replicas]
-async-57-2 ansible_host=192.168.2.X
-async-57-3 ansible_host=192.168.2.X
