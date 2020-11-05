@@ -62,10 +62,12 @@
     mysql_variables:
       variable: read_only
       value: 0
+      login_unix_socket: /var/lib/mysql/mysql.sock
   - name: Set super_read_only=0
     mysql_variables:
       variable: super_read_only
       value: 0
+      login_unix_socket: /var/lib/mysql/mysql.sock
   when: mysql_role == 'source'
 
 - name: Create users [block]
@@ -77,6 +79,7 @@
       password: "{{ repl_password }}"
       priv: '*.*:REPLICATION CLIENT,REPLICATION SLAVE'
       state: present
+      login_unix_socket: /var/lib/mysql/mysql.sock
   - name: Create {{ mysql_user }}@% user
     mysql_user:
       name: "{{ mysql_user }}"
@@ -84,6 +87,7 @@
       password: "{{ mysql_password }}"
       priv: '*.*:ALL,GRANT'
       state: present
+      login_unix_socket: /var/lib/mysql/mysql.sock
   when: mysql_role == 'source'
 
 - name: Load data [block]
@@ -103,11 +107,13 @@
       name: sakila
       state: import
       target: /tmp/sakila-db/sakila-schema.sql
+      login_unix_socket: /var/lib/mysql/mysql.sock
   - name: Import Sakila DB Data
     mysql_db:
       name: sakila
       state: import
       target: /tmp/sakila-db/sakila-data.sql
+      login_unix_socket: /var/lib/mysql/mysql.sock
   when: mysql_role == 'source'
 
 - name: Evaluate replication [block]
@@ -123,6 +129,7 @@
   - name: Start replication
     mysql_replication:
       mode: startslave
+      login_unix_socket: /var/lib/mysql/mysql.sock
     when: slavestatus.stdout == ""
   when: mysql_role == 'replica'
 

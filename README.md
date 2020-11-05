@@ -1,38 +1,40 @@
-# mysql-ansible
+# About
+The `main.yml` playbook can set up many different MySQL environments.
+By default, it will not execute any role.
+Each role (MySQL environment) has a `--tag` that must be specified to be executed.
+Each role is explained in each section below.
 
-# async-57
+# async57
 This playbook will:
 - Install the latest Percona Server 5.7
 - Configure a my.cnf for replication and Orchestrator
-- Configure asynchronous replication (1 source + any number of replicas)
-- Create a MySQL user and .my.cnf for an OS user
+- Configure asynchronous replication for 1 source + any number of replicas (it all depends on your hosts file)
+- Create a MySQL user and a .my.cnf for your OS user
 - Load the Sakila database
 
 Pre-requisites:
 - Python 2.7
 
 Steps:
-1. Update the inventory `hosts` file for `async57` group:
+1. Update the inventory `hosts` file for the `all:vars` and `async57` groups:
+- Set the `os_user` to your OS user that should get the .my.cnf (the `os_user` must exist on all hosts!)
 - Remove `ansible_connection=local` if Ansible is running remotely
-- Update IPs accordingly
+- Only 1 server should be assigned `mysql_role=source`
+- Update IPs accordingly, the `source_ip` should be the IP of the `mysql_role=source` server 
 - Add/remove replicas
 ```
-[async57]
-async57-1 ansible_connection=local ansible_host=192.168.2.X mysql_role=source
-async57-2 ansible_host=192.168.2.X mysql_role=replica
-async57-3 ansible_host=192.168.2.X mysql_role=replica
-```
-2. Update the variables.
-- The `os_user` must exist on all servers (group_vers to do)
-```
+[all:vars]
 os_user=vagrant
-source_ip=192.168.2.X
-mysql_user: dba
-mysql_password: Dba1234!
-repl_user: repl
-repl_password: Repl1234!
+
+[async57]
+mysql1 ansible_host=192.168.2.91 mysql_role=source ansible_connection=local
+mysql2 ansible_host=192.168.2.92 mysql_role=replica
+mysql2 ansible_host=192.168.2.93 mysql_role=replica
+
+[async57:vars]
+source_ip=192.168.2.91
 ```
-3. Run the playbook:
+2. Run the playbook:
 ```
-ansible-playbook main.yml --extra-vars "run_play=async57"
+ansible-playbook main.yml --tags=async57
 ```

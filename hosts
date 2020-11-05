@@ -2,8 +2,9 @@
 os_user=vagrant
 
 [async57]
-async57-1 ansible_connection=local ansible_host=192.168.2.91 mysql_role=source
-async57-2 ansible_host=192.168.2.92 mysql_role=replica
+mysql1 ansible_host=192.168.X.X mysql_role=source ansible_connection=local
+mysql2 ansible_host=192.168.X.X mysql_role=replica
+mysql3 ansible_host=192.168.X.X mysql_role=replica
 
 [async57:vars]
-source_ip=192.168.2.91
+source_ip=192.168.X.X
