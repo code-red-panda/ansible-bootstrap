@@ -1,7 +1,10 @@
 # About
 The `main.yml` playbook can set up many different MySQL environments.
+
 By default, it will not execute any role.
+
 Each role (MySQL environment) has a `--tag` that must be specified to be executed.
+
 Each role is explained in each section below.
 
 # async57
@@ -16,7 +19,8 @@ Pre-requisites:
 - Python 2.7
 
 Steps:
-1. Update the inventory `hosts` file for the `all:vars` and `async57` groups:
+
+Update the inventory `hosts` file for the `all:vars` and `async57` groups:
 - Set the `os_user` to your OS user that should get the .my.cnf (the `os_user` must exist on all hosts!)
 - Remove `ansible_connection=local` if Ansible is running remotely
 - Only 1 server should be assigned `mysql_role=source`
@@ -34,7 +38,7 @@ mysql2 ansible_host=192.168.2.93 mysql_role=replica
 [async57:vars]
 source_ip=192.168.2.91
 ```
-2. Run the playbook:
+Run the playbook:
 ```
 ansible-playbook main.yml --tags=async57
 ```
