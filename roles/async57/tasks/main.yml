@@ -18,7 +18,7 @@
     - start mysql
 
 - name: Generate a unique server_id
-  shell: echo "{{ ansible_eth1['ipv4']['address'] }}" | awk -F. '{ print $2$3$4 }'
+  shell: echo "{{ ansible_host }}" | awk -F. '{ print $2$3$4 }'
   register: server_id
 
 - name: Configure my.cnf
@@ -34,7 +34,7 @@
      - { option: log_slave_updates, value: "1" }
      - { option: master_info_repository, value: "TABLE" }
      - { option: read_only, value: "1" }
-     - { option: report_host, value: "{{ ansible_eth1['ipv4']['address'] }}" }
+     - { option: report_host, value: "{{ ansible_host }}" }
      - { option: report_port, value: "3306" }
      - { option: server_id, value: "{{ server_id.stdout }}" }
      - { option: skip_name_resolve, value: "1" }
