@@ -1,0 +1,10 @@
+---
+
+orc_mysql_user: orchestrator
+orc_mysql_password: Amplify-Driller-Pang-Friction7
+orc_http_user: orchestrator
+orc_http_password: Tantrum0-Reassign-Flatterer-Glaucoma
+package_list: "nodejs,jq,https://github.com/github/orchestrator/releases/download/v3.0.14/orchestrator-3.0.14-1.x86_64.rpm,https://github.com/github/orchestrator/releases/download/v3.0.14/orchestrator-client-3.0.14-1.x86_64.rpm"
+orc_sample_conf: /usr/local/orchestrator/orchestrator-sample-sqlite.conf.json
+orc_conf: /etc/orchestrator.conf.json
+vals: true

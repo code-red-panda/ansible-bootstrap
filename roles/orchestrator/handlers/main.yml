@@ -1,0 +1,7 @@
+---
+
+- name: Start Orchestrator
+  service:
+    name: orchestrator
+    state: restarted
+    enabled: yes

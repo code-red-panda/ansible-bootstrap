@@ -4,3 +4,8 @@
   become: yes
   roles:
     - {role: async57, tags: [ never, async57 ]}
+
+- hosts: orchestrator
+  become: yes
+  roles:
+    - {role: orchestrator, tags: [ never, orchestrator ]}

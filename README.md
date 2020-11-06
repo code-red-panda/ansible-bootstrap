@@ -42,3 +42,34 @@ Run the playbook:
 ```
 ansible-playbook main.yml --tags=async57
 ```
+
+# orchestrator
+
+Note! This playbook is still in progress and not completed.
+
+This playbook will:
+- Install Orchestrator and Orchestrator Client 3.14
+- Create an Orchestrator systemd service
+- Create an Orchestrator MySQL user on the `discover` MySQL server
+- To do: Configure the Orchestrator conf to use Super Read Only, Pseudo GTID, and IPs only (no hostname resolving)
+- To do: Discover the cluster
+
+Pre-requisites:
+- A MySQL async cluster
+
+Steps:
+
+Update the inventory `hosts` file for the `orchestrator` group:
+- Remove `ansible_connection=local` if Ansible is running remotely
+- Provide the `monitor` server IP. This is where you want to run Orchestrator
+- Provide the `discover` server IP. This must be the source MySQL server (grant statements will be ran on it).
+- The `monitor` and `discover` IPs can be the same server.
+```
+[orchestrator]
+monitor ansible_host=192.168.2.91 ansible_connection=local
+discover ansible_host=192.168.2.91 ansible_connection=local
+```
+Run the playbook:
+```
+ansible-playbook main.yml --tags=orchestrator
+```
