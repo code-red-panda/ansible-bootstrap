@@ -1,6 +1,0 @@
----
-
-mysql_user: dba
-mysql_password: Dba1234!
-repl_user: repl
-repl_password: Repl1234!

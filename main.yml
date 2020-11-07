@@ -2,6 +2,8 @@
 
 - hosts: async57
   become: yes
+  vars:
+    - source_ip: "{{ hostvars['mysql1']['ansible_host'] }}"
   roles:
     - {role: async57, tags: [ never, async57 ]}
 

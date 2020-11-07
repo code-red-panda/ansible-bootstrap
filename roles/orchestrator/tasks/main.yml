@@ -1,78 +1,23 @@
 ---
 
-- name: Create Orchestrator MySQL user [block]
-  block:
-  - name: Grant global privs
-    mysql_user:
-      name: "{{ orc_mysql_user }}"
-      host: "%"
-      password: "{{ orc_mysql_password }}"
-      priv: '*.*:SUPER,PROCESS,REPLICATION SLAVE,RELOAD'
-      state: present
-      login_unix_socket: /var/lib/mysql/mysql.sock
-  - name: Grant replication credential privs
-    mysql_user:
-      name: "{{ orc_mysql_user }}"
-      host: "%"
-      password: "{{ orc_mysql_password }}"
-      priv: 'mysql.slave_master_info:SELECT'
-      state: present
-      login_unix_socket: /var/lib/mysql/mysql.sock
-  - name: Grant Pseudo GTID privs
-    mysql_user:
-      name: "{{ orc_mysql_user }}"
-      host: "%"
-      password: "{{ orc_mysql_password }}"
-      priv: '_pseudo_gtid_.*:DROP'
-      state: present
-      login_unix_socket: /var/lib/mysql/mysql.sock
-  - name: Grant cluster name privs
-    mysql_user:
-      name: "{{ orc_mysql_user }}"
-      host: "%"
-      password: "{{ orc_mysql_password }}"
-      priv: 'orchestrator_meta.*:SELECT'
-      state: present
-      login_unix_socket: /var/lib/mysql/mysql.sock
-  when: inventory_hostname == 'discover'
+#- name: Install Orchestrator packages
+  #yum:
+    #name: "{{ package_list }}"
+    #state: latest
 
-- name: Install Orchestrator packages
-  yum:
-    name: "{{ package_list }}"
-    state: latest
-  when: inventory_hostname == "monitor"
-
-- name: Add options to Orchestrator sample config file
-  lineinfile:
-    path: "{{ orc_sample_conf }}"
-    insertafter: '^{$'
-    line: "\"UseSuperReadOnly\": true,\n\"AutoPseudoGTID\": true,"
-
-- name: Update options in Orchestrator sample config file
-  json_mod:
-    path: "{{ orc_sample_conf }}"
-    MySQLTopologyUser: "{{ orc_mysql_user }}"
-    MySQLTopologyPassword: "{{ orc_mysql_password }}"
-    HTTPAuthUser: "{{ orc_http_user }}"
-    HTTPAuthPassword: "{{ orc_http_password }}"
-    HostnameResolveMethod: "none"
-    MySQLHostnameResolveMethod: ""
-    DetectClusterAliasQuery: ""
-    MasterFailoverDetachSlaveMasterHost: "{{ vals }}"
-    RecoveryPeriodBlockSeconds: 3601
-    CoMasterRecoveryMustPromoteOtherCoMaster: true
-    ApplyMySQLPromotionAfterMasterFailover: 1
-  when: inventory_hostname == "monitor"
-
-- name: Copy Orchestrator sample config file into place
-  copy:
-    src: "{{ orc_sample_conf }}"
+- name: Copy Orchestrator config file into place
+  template:
+    src: orchestrator.conf.json.j2
     dest: "{{ orc_conf }}"
 
-- name: Create Orchestrator service for systemd
-  copy:
-      src: files/orchestrator.service
-      dest: /etc/systemd/system/orchestrator.service
+#- name: Create Orchestrator service for systemd
+  #template:
+      #src: orchestrator.service.j2
+      #dest: "{{ orc_systemd_service }}"
 
-- name: Start Orchestrator
-  meta: flush_handlers
+#- name: Start Orchestrator
+  #meta: flush_handlers
+
+- name: Discover Orchestrator nodes
+  command: orchestrator-client -c discover -i "{{ hostvars[item]['ansible_host'] }}"
+  loop: "{{ groups[orc_cluster] }}"

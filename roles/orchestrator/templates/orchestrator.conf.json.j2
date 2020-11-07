@@ -1,0 +1,129 @@
+{
+  "UseSuperReadOnly": {{ config.UseSuperReadOnly | to_json }},
+  "AutoPseudoGTID": {{ config.AutoPseudoGTID | to_json }},
+  "Debug": true,
+  "EnableSyslog": false,
+  "ListenAddress": ":3000",
+  "MySQLTopologyUser": {{ config.MySQLTopologyUser | to_json }},
+  "MySQLTopologyPassword": {{ config.MySQLTopologyPassword | to_json }},
+  "MySQLTopologyCredentialsConfigFile": "",
+  "MySQLTopologySSLPrivateKeyFile": "",
+  "MySQLTopologySSLCertFile": "",
+  "MySQLTopologySSLCAFile": "",
+  "MySQLTopologySSLSkipVerify": true,
+  "MySQLTopologyUseMutualTLS": false,
+  "BackendDB": "sqlite",
+  "SQLite3DataFile": "/usr/local/orchestrator/orchestrator.sqlite3",
+  "DefaultInstancePort": 3306,
+  "DiscoverByShowSlaveHosts": true,
+  "InstancePollSeconds": 5,
+  "UnseenInstanceForgetHours": 240,
+  "SnapshotTopologiesIntervalHours": 0,
+  "InstanceBulkOperationsWaitTimeoutSeconds": 10,
+  "HostnameResolveMethod": {{ config.HostnameResolveMethod | to_json }},
+  "MySQLHostnameResolveMethod": {{ config.MySQLHostnameResolveMethod | to_json }},
+  "SkipBinlogServerUnresolveCheck": true,
+  "ExpiryHostnameResolvesMinutes": 60,
+  "RejectHostnameResolvePattern": "",
+  "ReasonableReplicationLagSeconds": 10,
+  "ProblemIgnoreHostnameFilters": [],
+  "VerifyReplicationFilters": false,
+  "ReasonableMaintenanceReplicationLagSeconds": 20,
+  "CandidateInstanceExpireMinutes": 60,
+  "AuditLogFile": "",
+  "AuditToSyslog": false,
+  "RemoveTextFromHostnameDisplay": ".mydomain.com:3306",
+  "ReadOnly": false,
+  "AuthenticationMethod": "",
+  "HTTPAuthUser": {{ config.HTTPAuthUser | to_json }},
+  "HTTPAuthPassword": {{ config.HTTPAuthPassword | to_json }},
+  "AuthUserHeader": "",
+  "PowerAuthUsers": [
+    "*"
+  ],
+  "ClusterNameToAlias": {
+{% for db in groups[orc_cluster] %}
+{% if loop.last %}
+    "{{ hostvars[db].ansible_host }}:3306": "{{ orc_cluster }}"
+{% else %}
+    "{{ hostvars[db].ansible_host }}:3306": "{{ orc_cluster }}",
+{% endif %}
+{% endfor %}
+  },
+  "SlaveLagQuery": "",
+  "DetectClusterAliasQuery": {{ config.DetectClusterAliasQuery | to_json }},
+  "DetectClusterDomainQuery": "",
+  "DetectInstanceAliasQuery": "",
+  "DetectPromotionRuleQuery": "",
+  "DataCenterPattern": "[.]([^.]+)[.][^.]+[.]mydomain[.]com",
+  "PhysicalEnvironmentPattern": "[.]([^.]+[.][^.]+)[.]mydomain[.]com",
+  "PromotionIgnoreHostnameFilters": [],
+  "DetectSemiSyncEnforcedQuery": "",
+  "ServeAgentsHttp": false,
+  "AgentsServerPort": ":3001",
+  "AgentsUseSSL": false,
+  "AgentsUseMutualTLS": false,
+  "AgentSSLSkipVerify": false,
+  "AgentSSLPrivateKeyFile": "",
+  "AgentSSLCertFile": "",
+  "AgentSSLCAFile": "",
+  "AgentSSLValidOUs": [],
+  "UseSSL": false,
+  "UseMutualTLS": false,
+  "SSLSkipVerify": false,
+  "SSLPrivateKeyFile": "",
+  "SSLCertFile": "",
+  "SSLCAFile": "",
+  "SSLValidOUs": [],
+  "URLPrefix": "",
+  "StatusEndpoint": "/api/status",
+  "StatusSimpleHealth": true,
+  "StatusOUVerify": false,
+  "AgentPollMinutes": 60,
+  "UnseenAgentForgetHours": 6,
+  "StaleSeedFailMinutes": 60,
+  "SeedAcceptableBytesDiff": 8192,
+  "PseudoGTIDPattern": "",
+  "PseudoGTIDPatternIsFixedSubstring": false,
+  "PseudoGTIDMonotonicHint": "asc:",
+  "DetectPseudoGTIDQuery": "",
+  "BinlogEventsChunkSize": 10000,
+  "SkipBinlogEventsContaining": [],
+  "ReduceReplicationAnalysisCount": true,
+  "FailureDetectionPeriodBlockMinutes": 60,
+  "RecoveryPeriodBlockSeconds": 3600,
+  "RecoveryIgnoreHostnameFilters": [],
+  "RecoverMasterClusterFilters": [
+    "_master_pattern_"
+  ],
+  "RecoverIntermediateMasterClusterFilters": [
+    "_intermediate_master_pattern_"
+  ],
+  "OnFailureDetectionProcesses": [
+    "echo 'Detected {failureType} on {failureCluster}. Affected replicas: {countSlaves}' >> /tmp/recovery.log"
+  ],
+  "PreFailoverProcesses": [
+    "echo 'Will recover from {failureType} on {failureCluster}' >> /tmp/recovery.log"
+  ],
+  "PostFailoverProcesses": [
+    "echo '(for all types) Recovered from {failureType} on {failureCluster}. Failed: {failedHost}:{failedPort}; Successor: {successorHost}:{successorPort}' >> /tmp/recovery.log"
+  ],
+  "PostUnsuccessfulFailoverProcesses": [],
+  "PostMasterFailoverProcesses": [
+    "echo 'Recovered from {failureType} on {failureCluster}. Failed: {failedHost}:{failedPort}; Promoted: {successorHost}:{successorPort}' >> /tmp/recovery.log"
+  ],
+  "PostIntermediateMasterFailoverProcesses": [
+    "echo 'Recovered from {failureType} on {failureCluster}. Failed: {failedHost}:{failedPort}; Successor: {successorHost}:{successorPort}' >> /tmp/recovery.log"
+  ],
+  "CoMasterRecoveryMustPromoteOtherCoMaster": false,
+  "DetachLostSlavesAfterMasterFailover": false,
+  "ApplyMySQLPromotionAfterMasterFailover": {{ config.ApplyMySQLPromotionAfterMasterFailover | to_json }},
+  "PreventCrossDataCenterMasterFailover": false,
+  "MasterFailoverDetachSlaveMasterHost": {{ config.MasterFailoverDetachSlaveMasterHost | to_json }},
+  "MasterFailoverLostInstancesDowntimeMinutes": 0,
+  "PostponeSlaveRecoveryOnLagMinutes": 0,
+  "OSCIgnoreHostnameFilters": [],
+  "GraphiteAddr": "",
+  "GraphitePath": "",
+  "GraphiteConvertHostnameDotsToUnderscores": true
+}
