@@ -15,8 +15,11 @@
       src: orchestrator.service.j2
       dest: "{{ orc_systemd_service }}"
 
-- name: Start Orchestrator
-  meta: flush_handlers
+- name: Restart orchestrator
+  service:
+    name: orchestrator
+    state: restarted
+    enabled: yes
 
 - name: Discover Orchestrator nodes
   command: orchestrator-client -c discover -i "{{ hostvars[item]['ansible_host'] }}"
