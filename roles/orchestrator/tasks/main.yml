@@ -1,22 +1,22 @@
 ---
 
-#- name: Install Orchestrator packages
-  #yum:
-    #name: "{{ package_list }}"
-    #state: latest
+- name: Install Orchestrator packages
+  yum:
+    name: "{{ package_list }}"
+    state: latest
 
 - name: Copy Orchestrator config file into place
   template:
     src: orchestrator.conf.json.j2
     dest: "{{ orc_conf }}"
 
-#- name: Create Orchestrator service for systemd
-  #template:
-      #src: orchestrator.service.j2
-      #dest: "{{ orc_systemd_service }}"
+- name: Create Orchestrator service for systemd
+  template:
+      src: orchestrator.service.j2
+      dest: "{{ orc_systemd_service }}"
 
-#- name: Start Orchestrator
-  #meta: flush_handlers
+- name: Start Orchestrator
+  meta: flush_handlers
 
 - name: Discover Orchestrator nodes
   command: orchestrator-client -c discover -i "{{ hostvars[item]['ansible_host'] }}"
