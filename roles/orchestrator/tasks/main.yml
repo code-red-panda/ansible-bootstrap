@@ -15,7 +15,7 @@
       src: orchestrator.service.j2
       dest: "{{ orc_systemd_service }}"
 
-- name: Restart orchestrator
+- name: Restart Orchestrator
   service:
     name: orchestrator
     state: restarted
